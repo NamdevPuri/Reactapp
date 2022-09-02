@@ -3,6 +3,47 @@ const jwt = require("jsonwebtoken")
 const mongoose = require("mongoose")
 const validator = require("../middleware/validation")
 
+
+
+const signup = async function(req, res) {
+    try {
+let body = req.body
+        const { email, password } = body
+       
+        // Email is Mandatory...
+        if (!validator.isValid(email)) {
+            return res.status(400).send({ status: false, msg: "Email is required" })
+        };
+        // For a Valid Email...
+        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(body.email))) {
+            return res.status(400).send({ status: false, message: ' Email should be a valid' })
+        };
+
+    
+        let duplicateEmail = await userModel.findOne({ email: body.email })
+        if (duplicateEmail) {
+            return res.status(400).send({ status: false, msg: 'Email already exist' })
+        };
+
+        if (!validator.isValid(password)) {
+            return res.status(400).send({ Status: false, message: " password is required" })
+        }
+        
+        let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
+        if (!Passwordregex.test(password)) {
+            return res.status(401).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
+        }
+
+        let registerBody = { email: email, password: password}
+         const register = await userModel.create(registerBody)
+        return res.status(201).send({ data: register , message: "User Registered" })
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+
+    }
+}
+
+
 const login = async function(req, res) {
     try {
 
@@ -55,44 +96,5 @@ const login = async function(req, res) {
     }
 }
 
-
-
-const signup = async function(req, res) {
-    try {
-let body = req.body
-        const { email, password } = body
-       
-        // Email is Mandatory...
-        if (!validator.isValid(email)) {
-            return res.status(400).send({ status: false, msg: "Email is required" })
-        };
-        // For a Valid Email...
-        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(body.email))) {
-            return res.status(400).send({ status: false, message: ' Email should be a valid' })
-        };
-
-    
-        let duplicateEmail = await userModel.findOne({ email: body.email })
-        if (duplicateEmail) {
-            return res.status(400).send({ status: false, msg: 'Email already exist' })
-        };
-
-        if (!validator.isValid(password)) {
-            return res.status(400).send({ Status: false, message: " password is required" })
-        }
-        
-        let Passwordregex = /^[A-Z0-9a-z]{1}[A-Za-z0-9.@#$&]{7,14}$/
-        if (!Passwordregex.test(password)) {
-            return res.status(401).send({ Status: false, message: " Please enter a valid password, minlength 8, maxxlength 15" })
-        }
-
-        let registerBody = { email: email, password: password}
-         const register = await userModel.create(registerBody)
-        return res.status(201).send({ data: register , message: "User Registered" })
-    } catch (err) {
-        return res.status(500).send({ status: false, message: err.message })
-
-    }
-}
 
 module.exports = { signup, login}
